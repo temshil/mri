@@ -1,0 +1,14 @@
+numpy
+scipy
+lmfit
+nibabel
+nipype
+progressbar33
+seaborn
+matplotlib
+scikit-build
+opencv-python
+git+https://github.com/brkraw/bruker
+openpyxl
+dipy
+antspyx
