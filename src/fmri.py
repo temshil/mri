@@ -254,7 +254,7 @@ if __name__ == '__main__':
                         out_path_sc.split('.')[0]+'_AP.nii.gz', 
                         out_path_rev_sc], check=True)
         
-        acq_param=os.path.join(os.path.dirname(os.path.dirname(in_path)),'lib','acq_param.txt')
+        acq_param='/temshil/lib/acq_param.txt'
         
         subprocess.run([
         'topup',
@@ -339,9 +339,9 @@ if __name__ == '__main__':
         func_in_path_mask = os.path.join(in_path,'func',f'sub-{sub}_ses-{ses}_bold_stc_sc_tu_mc_fs_bc_bet_mask_ds.nii.gz')
         func_in_path_bet = os.path.join(in_path,'func',f'sub-{sub}_ses-{ses}_bold_stc_sc_tu_mc_fs_bc_bet_ds.nii.gz')
         
-        if  os.path.exists(os.path.join(in_path,'func', 'bad_ICs.txt')):
+        if  os.path.exists(os.path.join(in_path,'func', 'bad_ics.txt')):
             
-            with open(os.path.join(in_path,'func', 'bad_ICs.txt'), "r") as f:
+            with open(os.path.join(in_path,'func', 'bad_ics.txt'), "r") as f:
                 bad_ics = [line.strip() for line in f if line.strip()]  # remove empty lines
     
             bad_ics_joined = ",".join(bad_ics)
@@ -359,8 +359,8 @@ if __name__ == '__main__':
         else:
             func_in_path_ica = func_in_path
         
-        anno_path=os.path.join(os.path.dirname(os.path.dirname(in_path)),'lib','atlas.nii.gz')
-        template_path=os.path.join(os.path.dirname(os.path.dirname(in_path)),'lib','average_template_50.nii.gz')
+        anno_path='/temshil/lib/atlas.nii.gz'
+        template_path='/temshil/lib/average_template_50.nii.gz'
         
         if not os.path.exists(os.path.join(in_path,'anat','anat2temp_ala.nii.gz')):
         

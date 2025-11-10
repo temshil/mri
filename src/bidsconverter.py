@@ -19,7 +19,7 @@ def parse_args():
                         help='Name of the DTI sequence')
     return parser.parse_args()
 
-def main():
+if __name__ == '__main__':
     args = parse_args()
     in_path = args.in_path
     anat_name = "*" + args.anat_name + "*"
@@ -51,7 +51,6 @@ def main():
     os.makedirs(os.path.join(in_path,f"sub-{sub}",f"ses-{ses}","dwi"), exist_ok=True)
     os.makedirs(os.path.join(in_path,f"sub-{sub}",f"ses-{ses}","dwi_rev"), exist_ok=True)
     
-    
     anat_file_list = glob.glob(os.path.join(in_path, '**', anat_name), recursive=True)
     
     if len(anat_file_list) != 0:
@@ -78,7 +77,6 @@ def main():
                             fmri_rev_nii_copy = os.path.join(in_path, f"sub-{sub}",f"ses-{ses}","func_rev",f"sub-{sub}_ses-{ses}_bold_rev.nii.gz")
                             shutil.copy(file,fmri_rev_nii_copy)
                             fmri_rev_json_copy = os.path.join(in_path, f"sub-{sub}",f"ses-{ses}","func_rev",f"sub-{sub}_ses-{ses}_bold_rev.json")
-                            #file.split(".")[0] did not work
                             shutil.copy(re.sub(r'\.nii\.gz$', '', file)+".json",fmri_rev_json_copy)
                         elif imgTemp.shape == (64,64,64):
                             b0map_copy = os.path.join(in_path, f"sub-{sub}",f"ses-{ses}",f"sub-{sub}_ses-{ses}_b0map.nii")
@@ -137,6 +135,3 @@ def main():
     b0map_copy = os.path.join(in_path, f"sub-{sub}",f"ses-{ses}",f"sub-{sub}_ses-{ses}_b0map.nii")
     if not os.path.exists(b0map_copy):
         shutil.copy(b0map[0],b0map_copy)
-
-if __name__ == '__main__':
-    main()

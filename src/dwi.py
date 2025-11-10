@@ -139,7 +139,7 @@ if __name__ == '__main__':
                     out_path_sc.split('.')[0]+'_AP.nii.gz', 
                     out_path_rev_sc], check=True)
     
-    acq_param=os.path.join(os.path.dirname(os.path.dirname(in_path)),'lib','acq_param.txt')
+    acq_param='/temshil/lib/acq_param.txt'
     
     subprocess.run([
     'topup',
@@ -214,8 +214,8 @@ if __name__ == '__main__':
     
     out_path_ds = changescale(out_path_ed, 0.05)    
     
-    anno_path=os.path.join(os.path.dirname(os.path.dirname(in_path)),'lib','atlas.nii.gz')
-    template_path=os.path.join(os.path.dirname(os.path.dirname(in_path)),'lib','average_template_50.nii.gz')
+    anno_path='/temshil/lib/atlas.nii.gz'
+    template_path='/temshil/lib/average_template_50.nii.gz'
     
     if not os.path.exists(os.path.join(in_path,'anat','anat2temp_ala.nii.gz')):
     
@@ -285,7 +285,7 @@ if __name__ == '__main__':
     atlas_data_rm_wmcsf = nii.Nifti1Image(atlas_data, atlas_img.affine, header=atlas_img.header)
     nii.save(atlas_data_rm_wmcsf, out_atlas_upd)
     
-    dsi_output = os.path.join(in_path,'dwi','dsi_studio.gz')
+    dsi_output = os.path.join(in_path,'dwi','dsi_studio')
     
     os.makedirs(dsi_output, exist_ok=True)
     
@@ -306,8 +306,8 @@ if __name__ == '__main__':
                     '--method=4',
                     '--param0=1.2',
                     '--mask='+out_mask_upd,
-                    '--output='+dsi_output,
-                    '--correct_bias_field=0'], check=True)
+                    '--output='+dsi_output], check=True)
+                    # '--correct_bias_field=0'
 
     subprocess.run([dsi_studio, '--action=trk',
                     '--source='+dsi_output+'/'+basename.split('.')[0]+'.gqi.fz',
