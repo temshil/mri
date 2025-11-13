@@ -262,11 +262,11 @@ if __name__ == '__main__':
                     '-flo',anno_path,
                     '-trans', os.path.join(in_path,'anat','temp2anat_invaffine.txt'), 
                     '-inter','0',
-                    '-res',os.path.join(in_path,'anat','anno2anat_nii.gz')], check=True)
+                    '-res',os.path.join(in_path,'anat','anno2anat.nii.gz')], check=True)
     
     subprocess.run(['reg_resample', '-ref',
                     out_path_ds_bet,
-                    '-flo', os.path.join(in_path,'anat','anno2anat_nii.gz'),
+                    '-flo', os.path.join(in_path,'anat','anno2anat.nii.gz'),
                     '-trans', os.path.join(in_path,'dwi','anat2dwi_invaffine.txt'), 
                     '-inter','0',
                     '-res', os.path.join(in_path,'dwi','anno2dwi.nii.gz')], check=True)
