@@ -31,7 +31,7 @@ if __name__ == '__main__':
             shutil.copytree(in_sub, out_sub_new,dirs_exist_ok=True)
         elif os.path.isdir(os.path.join(in_sub,'ses-ses')):
             count += 1
-            out_sub_new = os.path.join(out_path, os.path.basename(in_sub)+str(count))
+            out_sub_new = os.path.join(out_path, os.path.basename(in_sub), 'ses-ses'+str(count))
             shutil.copytree(os.path.join(in_sub,'ses-ses'), out_sub_new, dirs_exist_ok=True)
         else:
             shutil.copytree(in_sub, out_sub,dirs_exist_ok=True)
