@@ -97,11 +97,11 @@ if __name__ == '__main__':
     backup_dwi = os.path.join(in_path,'dwi','raw')
     backup_dwi_rev = os.path.join(in_path,'dwi_rev','raw')
     
-    os.makedirs(backup_dwi, exist_ok=True)
-    os.makedirs(backup_dwi_rev, exist_ok=True)
-    
-    shutil.copy2(dwi_in_path, os.path.join(backup_dwi, os.path.basename(dwi_in_path)))
-    shutil.copy2(dwi_rev_in_path, os.path.join(backup_dwi_rev, os.path.basename(dwi_rev_in_path)))
+    if not os.path.exists(os.path.join(backup_dwi, os.path.basename(dwi_in_path))):
+        os.makedirs(backup_dwi, exist_ok=True)
+        os.makedirs(backup_dwi_rev, exist_ok=True)
+        shutil.copy2(dwi_in_path, os.path.join(backup_dwi, os.path.basename(dwi_in_path)))
+        shutil.copy2(dwi_rev_in_path, os.path.join(backup_dwi_rev, os.path.basename(dwi_rev_in_path)))
     
     backup_anat = os.path.join(in_path,'anat','raw')
     if not os.path.exists(backup_anat):
@@ -141,59 +141,60 @@ if __name__ == '__main__':
     
     acq_param='/temshil/lib/acq_param.txt'
     
-    subprocess.run([
-    'topup',
-    '--imain='+out_path_sc.split('.')[0]+'_AP_PA.nii.gz',
-    '--datain='+acq_param,
-    '--config=b02b0.cnf',
-    '--out='+out_path_sc.split('.')[0]+'_AP_PA_tu',
-    '--warpres=20,16,14,12,10,6,4,4,4',
-    '--subsamp=2,2,2,2,2,1,1,1,1',
-    '--fwhm=8,6,4,3,3,2,1,0,0',
-    '--miter=5,5,5,5,5,10,10,20,20',
-    '--lambda=0.005,0.001,0.0001,0.000015,0.000005,0.0000005,0.00000005,0.0000000005,0.00000000001',
-    '--ssqlambda=1',
-    '--regmod=bending_energy',
-    '--estmov=1,1,1,1,1,0,0,0,0',
-    '--minmet=0,0,0,0,0,1,1,1,1',
-    '--splineorder=3',
-    '--numprec=double',
-    '--interp=spline',
-    '--scale=1'
-    ], check=True)
-    
-    out_path_bc = biascorrection(out_path_sc.split('.')[0]+'_AP.nii.gz',2, [50, 50, 50, 50, 0])
-    
-    subprocess.run(['bet', out_path_bc,
-                    out_path_bc.split('.')[0]+'_bet.nii.gz', 
-                    '-f', '0.25',
-                    '-r', '50',
-                    '-g', '0',
-                    '-m', '-R'], check=True)
-    
-    open(os.path.join(in_path,'dwi','index.txt'), "w").close() 
-
-    for i in range(1, 126):
-        with open(os.path.join(in_path,'dwi','index.txt'), "a") as f:
-            f.write("1\n")
-    
-    subprocess.run([
-    'eddy_cuda11.0',
-    '--imain='+out_path_sc,
-    '--mask='+out_path_bc.split('.')[0]+'_bet_mask.nii.gz',
-    '--acqp='+acq_param,
-    '--index='+os.path.join(in_path,'dwi','index.txt'),
-    '--bvecs='+dwi_in_path.split('.')[0]+'.bvec',
-    '--bvals='+dwi_in_path.split('.')[0]+'.bval',
-    '--topup='+out_path_sc.split('.')[0]+'_AP_PA_tu',
-    '--out='+out_path_sc.split('.')[0]+'_tu_ed.nii.gz', 
-    # '--nthr=12', The version compiled for GPU can only use 1 CPU thread (i.e. --nthr=1)
-    '--nthr=1'
-    # '--s2v_niter=2'
-    ], check=True)
-    
     out_path_ed = out_path_sc.split('.')[0]+'_tu_ed.nii.gz'
     
+    if not os.path.exists(out_path_ed):
+        subprocess.run([
+        'topup',
+        '--imain='+out_path_sc.split('.')[0]+'_AP_PA.nii.gz',
+        '--datain='+acq_param,
+        '--config=b02b0.cnf',
+        '--out='+out_path_sc.split('.')[0]+'_AP_PA_tu',
+        '--warpres=20,16,14,12,10,6,4,4,4',
+        '--subsamp=2,2,2,2,2,1,1,1,1',
+        '--fwhm=8,6,4,3,3,2,1,0,0',
+        '--miter=5,5,5,5,5,10,10,20,20',
+        '--lambda=0.005,0.001,0.0001,0.000015,0.000005,0.0000005,0.00000005,0.0000000005,0.00000000001',
+        '--ssqlambda=1',
+        '--regmod=bending_energy',
+        '--estmov=1,1,1,1,1,0,0,0,0',
+        '--minmet=0,0,0,0,0,1,1,1,1',
+        '--splineorder=3',
+        '--numprec=double',
+        '--interp=spline',
+        '--scale=1'
+        ], check=True)
+        
+        out_path_bc = biascorrection(out_path_sc.split('.')[0]+'_AP.nii.gz',2, [50, 50, 50, 50, 0])
+        
+        subprocess.run(['bet', out_path_bc,
+                        out_path_bc.split('.')[0]+'_bet.nii.gz', 
+                        '-f', '0.25',
+                        '-r', '50',
+                        '-g', '0',
+                        '-m', '-R'], check=True)
+        
+        open(os.path.join(in_path,'dwi','index.txt'), "w").close() 
+    
+        for i in range(1, 126):
+            with open(os.path.join(in_path,'dwi','index.txt'), "a") as f:
+                f.write("1\n")
+        
+        subprocess.run([
+        'eddy_cuda11.0',
+        '--imain='+out_path_sc,
+        '--mask='+out_path_bc.split('.')[0]+'_bet_mask.nii.gz',
+        '--acqp='+acq_param,
+        '--index='+os.path.join(in_path,'dwi','index.txt'),
+        '--bvecs='+dwi_in_path.split('.')[0]+'.bvec',
+        '--bvals='+dwi_in_path.split('.')[0]+'.bval',
+        '--topup='+out_path_sc.split('.')[0]+'_AP_PA_tu',
+        '--out='+out_path_sc.split('.')[0]+'_tu_ed.nii.gz', 
+        # '--nthr=12', The version compiled for GPU can only use 1 CPU thread (i.e. --nthr=1)
+        '--nthr=1'
+        # '--s2v_niter=2'
+        ], check=True)
+        
     subprocess.run(['fslroi', out_path_ed,
                     out_path_ed.split('.')[0]+'_fs', '0', '1'], check=True)
     
@@ -205,8 +206,6 @@ if __name__ == '__main__':
                     '-r', '50',
                     '-g', '0',
                     '-m', '-R'], check=True)    
-    
-
     
     out_path_ds_bet = changescale(out_path_fs_bc.split('.')[0]+'_bet.nii.gz', 0.05)
     
@@ -322,4 +321,5 @@ if __name__ == '__main__':
                     '--connectivity='+out_atlas_upd,
                     '--connectivity_output=matrix,measure',
                     '--connectivity_type=pass,end',
+                    '--connectivity_value=count,dti_fa',
                     '--output='+dsi_output], check=True)

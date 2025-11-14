@@ -31,19 +31,24 @@ if __name__ == '__main__':
     subprocess.run(['brkraw', 'tonii', '-b',
                     in_path], check=True)
     
-    with open(os.path.join(in_path,"subject"), "r") as file:
+    with open(os.path.join(in_path, "subject"), "r") as file:
         content = file.read()
         lines = content.split("##")
         for line in lines:
             if "$SUBJECT_study_name" in line:
-                match = re.search(r'<([A-Za-z0-9]+)_([a-z]+)>', line)
+                # Try sub_ses pattern first
+                match = re.search(r'<([A-Za-z0-9]+)_([A-Za-z0-9]+)>', line)
                 if match:
-                    sub = match.group(1) if match.group(1) else 'sub'
-                    ses = match.group(2) if match.group(2) else 'ses'
+                    sub, ses = match.group(1), match.group(2)
                 else:
-                    sub = 'sub'
-                    ses = 'ses'
+                    match = re.search(r'<([A-Za-z0-9]+)>', line)
+                    if match:
+                        sub = match.group(1)
+                        ses = 'ses'
+                    else:
+                        sub, ses = "sub", "ses"
                 break
+
     
     os.makedirs(os.path.join(in_path,f"sub-{sub}",f"ses-{ses}","anat"), exist_ok=True)
     os.makedirs(os.path.join(in_path,f"sub-{sub}",f"ses-{ses}","func"), exist_ok=True)

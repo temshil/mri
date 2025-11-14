@@ -2,7 +2,6 @@
 31	L_Anterior_cingulate_area
 44	L_Infralimbic_area
 95	L_Agranular_insular_area
-184	L_Frontal_pole,_cerebral_cortex
 191	L_amygdalar_nuclei
 200	white_matter_cerebrospinal_fluid
 247	L_Auditory_areas
@@ -45,7 +44,6 @@
 2031	R_Anterior_cingulate_area
 2044	R_Infralimbic_area
 2095	R_Agranular_insular_area
-2184	R_Frontal_pole,_cerebral_cortex
 2191	R_amygdalar_nuclei
 2247	R_Auditory_areas
 2254	R_Retrosplenial_area

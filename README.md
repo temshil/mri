@@ -57,7 +57,8 @@ docker attach cont_name
 /temshil/src/conv2bids.sh
 python /temshil/src/copybids.py --in_path /temshil/data/raw --out_path /temshil/data/processed
 ```
-
+    > **Note:** Modify the script according to your naming format.
+    
 ## fMRI Processing
 
 ### Part 1:

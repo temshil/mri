@@ -46,6 +46,8 @@ r_extrapyr_fib = np.isin(mod_atlas_data, 3000)
 
 l_claustrum  = np.isin(mod_atlas_data, 583)
 r_claustrum  = np.isin(mod_atlas_data, 2583)
+l_front_pole = np.isin(mod_atlas_data, 184)
+r_front_pole = np.isin(mod_atlas_data, 2184)
 
 mod_atlas_data[csf_mask]  = 200
 
@@ -61,9 +63,10 @@ mod_atlas_data[r_thamrel]  = 0
 mod_atlas_data[r_med_for_bun]  = 0
 mod_atlas_data[r_extrapyr_fib]  = 0
 
-
 mod_atlas_data[l_claustrum]  = 95
 mod_atlas_data[r_claustrum]  = 2095
+mod_atlas_data[l_front_pole]  = 714
+mod_atlas_data[r_front_pole]  = 2714
 
 mod_atlas_data[l_cor_sub]   = 191
 mod_atlas_data[l_str_amyg]  = 191

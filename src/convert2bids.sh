@@ -7,3 +7,5 @@ for dir in "$parent_dir"/*/; do
     python /temshil/src/bidsconverter.py --in_path $dir --anat_name EPIref --fmri_name SE_EPI_Scan --dwi_name DTI_EPI
 
 done
+
+python /temshil/src/copybids.py --in_path /temshil/data/raw --out_path /temshil/data/processed
