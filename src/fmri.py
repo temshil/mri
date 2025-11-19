@@ -326,7 +326,7 @@ if __name__ == '__main__':
         '-o', melodic_out,
         '--Oall',
         '--report',
-        '--bgthreshold=0.1',
+        '--bgthreshold=0.25',
         '--tr=1.5',
         '--nobet'
         ], check=True)
