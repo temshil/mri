@@ -207,6 +207,13 @@ if __name__ == '__main__':
                     '-g', '0',
                     '-m', '-R'], check=True)    
     
+    subprocess.run(['fslmaths', out_path_fs_bc.split('.')[0]+'_bet_mask.nii.gz', 
+                    '-fillh',out_path_fs_bc.split('.')[0]+'_bet_mask.nii.gz'], check=True)
+    
+    subprocess.run(['fslmaths', out_path_fs_bc, '-mas', 
+                    out_path_fs_bc.split('.')[0]+'_bet_mask.nii.gz',
+                    out_path_fs_bc.split('.')[0]+'_bet.nii.gz'], check=True)
+    
     out_path_ds_bet = changescale(out_path_fs_bc.split('.')[0]+'_bet.nii.gz', 0.05)
     
     out_path_ds_mask = changescale(out_path_fs_bc.split('.')[0]+'_bet_mask.nii.gz', 0.05)
