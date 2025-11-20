@@ -332,5 +332,5 @@ if __name__ == '__main__':
                     '--output='+dsi_output], check=True)
     
     subprocess.run([dsi_studio, '--action=exp',
-                    '--source='+dsi_output+'/'+basename.split('.')[0]+'.dti.fz',
+                    '--source='+dsi_output+'/'+basename.split('.')[0]+'.gqi.fz',
                     '--export=dti_fa,rd'], check=True)
