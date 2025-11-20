@@ -1,77 +1,102 @@
-import nibabel as nib
+import nibabel as nii
 import numpy as np
+import nrrd        
+import requests
+from pathlib import Path 
 import pandas as pd
+import os
+import glob
+import re
+import shutil
 
-ara_atlas = nib.load('path/to/ARA_annotationR+2000.nii.gz')
-ara_data = ara_atlas.get_fdata()
+labels = pd.read_csv("/temshil/data/lib/atlas_modifications/labels.csv")
 
-ara_annot = pd.read_csv(
-    "path/to/atlas_modifications/ARA_annotationR+2000.nii.txt",
-    sep="\t",
-    header=None,
-    dtype=str
-)
+url  = "https://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/average_template/average_template_50.nrrd"
+nrrd_path = Path('/temshil/data/lib/atlas_modifications/average_template_50.nrrd')
 
-csf_names_path = 'path/to/atlas_modifications/csf.txt'
-csf_names_arr = [line.strip().replace(" ", "_") for line in open(csf_names_path, "r", encoding="utf-8")]
+with requests.get(url, stream=True) as r:
+    r.raise_for_status()
+    with open(nrrd_path, "wb") as f:
+        for chunk in r.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+data, header = nrrd.read(nrrd_path)
+data_swapped = np.transpose(data, (2,1,0))
+data_flipped = np.flip(data_swapped, axis=2) 
+img = nii.Nifti1Image(data_flipped, affine=np.eye(4))
+nii_out_path = os.path.join('/temshil/data/lib/', os.path.basename(nrrd_path).split('.')[0]+'.nii.gz')
+nii.save(img, nii_out_path)
+print("Saved:", nii_out_path)
 
-csf_labels = []
-for line in csf_names_arr:
-    l = ara_annot[ara_annot[1].str.contains(fr"^L_.*{line}", na=False, case=False)]
-    r = ara_annot[ara_annot[1].str.contains(fr"^R_.*{line}", na=False, case=False)]
-    csf_labels.append(float(l.iloc[0,0]))
-    csf_labels.append(float(r.iloc[0,0]))
+for str_id in labels['ID']:
+    url  = f"https://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/structure_masks/structure_masks_50/structure_{str_id}.nrrd"
+    nrrd_path = Path(f'/temshil/data/lib/atlas_modifications/str_nrrd/structure_{str_id}.nrrd')
 
-csf_mask = np.isin(ara_data, csf_labels)
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(nrrd_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+    data, header = nrrd.read(nrrd_path)
+    data_swapped = np.transpose(data, (2,1,0))
+    data_flipped = np.flip(data_swapped, axis=2) 
+    img = nii.Nifti1Image(data_flipped, affine=np.eye(4))
+    nii_out_path = os.path.join('/temshil/data/lib/atlas_modifications/str_nifti', os.path.basename(nrrd_path).split('.')[0]+'.nii.gz')
+    nii.save(img, nii_out_path)
+    print("Saved:", nii_out_path)
 
-mod_atlas = nib.load('path/to/atlas_modifications/annoVolume+2000_rsfMRI.nii.gz')
-mod_atlas_data = mod_atlas.get_fdata()
+str_nifti_list = glob.glob('/temshil/data/lib/atlas_modifications/str_nifti/*', recursive=True)
 
-l_cor_sub  = np.isin(mod_atlas_data, 703)
-l_str_amyg = np.isin(mod_atlas_data, 278)
-r_cor_sub  = np.isin(mod_atlas_data, 2703)
-r_str_amyg = np.isin(mod_atlas_data, 2278)
+shutil.copy(str_nifti_list[1],'/temshil/data/lib/atlas_modifications/atlas.nii.gz')
 
-l_cor_cal  = np.isin(mod_atlas_data, 776)
-l_corspin_tr  = np.isin(mod_atlas_data, 784)
-l_thamrel = np.isin(mod_atlas_data, 896)
-l_med_for_bun = np.isin(mod_atlas_data, 991)
-l_extrapyr_fib = np.isin(mod_atlas_data, 1000)
+pref = [184, 31, 44, 972]
+orb = [714, 95, 583]
+olf = [698,942]
+peri = [541, 922, 895]
+amyg = [131,295,319,780,278]
+striat = [485,493,275]
+wmcsf = [73,1009]
 
-r_cor_cal  = np.isin(mod_atlas_data, 2776)
-r_corspin_tr  = np.isin(mod_atlas_data, 2784)
-r_thamrel = np.isin(mod_atlas_data, 2896)
-r_med_for_bun = np.isin(mod_atlas_data, 2991)
-r_extrapyr_fib = np.isin(mod_atlas_data, 3000)
+atlas_img = nii.load('/temshil/data/lib/atlas.nii.gz')
+atlas_data = atlas_img.get_fdata()
 
-l_claustrum  = np.isin(mod_atlas_data, 583)
-r_claustrum  = np.isin(mod_atlas_data, 2583)
-l_front_pole = np.isin(mod_atlas_data, 184)
-r_front_pole = np.isin(mod_atlas_data, 2184)
+for str_nifti in str_nifti_list:
+    str_img = nii.load(str_nifti)
+    str_data = str_img.get_fdata()
+    label_id = int(re.search(r'structure_(\d+)', str_nifti).group(1))
+    if label_id in pref:
+        label_id = 31
+    elif label_id in orb:
+        label_id = 714
+    elif label_id in olf:
+        label_id = 698
+    elif label_id in peri:
+        label_id = 541
+    elif label_id in amyg:
+        label_id = 131
+    elif label_id in striat:
+        label_id = 485
+    elif label_id in wmcsf:
+        label_id = 200
+    atlas_data[str_data > 0] = label_id
+   
 
-mod_atlas_data[csf_mask]  = 200
+x_size, y_size, z_size = atlas_data.shape
 
-mod_atlas_data[l_cor_cal]  = 200
-mod_atlas_data[l_corspin_tr]  = 0
-mod_atlas_data[l_thamrel]  = 0
-mod_atlas_data[l_med_for_bun]  = 0
-mod_atlas_data[l_extrapyr_fib]  = 0
+midline = x_size // 2 
 
-mod_atlas_data[r_cor_cal]  = 200
-mod_atlas_data[r_corspin_tr]  = 0
-mod_atlas_data[r_thamrel]  = 0
-mod_atlas_data[r_med_for_bun]  = 0
-mod_atlas_data[r_extrapyr_fib]  = 0
+left_hemi = atlas_data[:midline, :, :]
+right_hemi = atlas_data[midline:, :, :]
 
-mod_atlas_data[l_claustrum]  = 95
-mod_atlas_data[r_claustrum]  = 2095
-mod_atlas_data[l_front_pole]  = 714
-mod_atlas_data[r_front_pole]  = 2714
+mask = (right_hemi > 0) & (right_hemi != 200)
+right_hemi[mask] += 2000
 
-mod_atlas_data[l_cor_sub]   = 191
-mod_atlas_data[l_str_amyg]  = 191
-mod_atlas_data[r_cor_sub]   = 2191
-mod_atlas_data[r_str_amyg]  = 2191
+combined = np.zeros_like(atlas_data)
+combined[:midline, :, :] = left_hemi
+combined[midline:, :, :] = right_hemi
 
-new_mod_atlas = nib.Nifti1Image(mod_atlas_data, mod_atlas.affine, mod_atlas.header)
-nib.save(new_mod_atlas, 'path/to/atlas.nii.gz')
+atlas_img_upd = nii.Nifti1Image(atlas_data, affine=atlas_img.affine)
+nii.save(atlas_img_upd, '/temshil/data/atlas/atlas.nii.gz')
+   
+

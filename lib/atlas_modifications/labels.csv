@@ -1,0 +1,39 @@
+Parental,Name,Acronym,ID
+Motor,Motor,MO,500
+Somatosensory,Somatosensory,SS,453
+Gustatory,Gustatory,GU,1057
+Visceral,Visceral,VISC,677
+Auditory,Auditory,AUD,247
+Visual,Visual,VIS,669
+Retrosplenial,Retrosplenial,RSP,254
+Posterior parietal association,Posterior parietal association,PTLp,22
+Prefrontal cortex,Anterior cingulate,ACA,31
+Prefrontal cortex,Prelimbic,PL,972
+Prefrontal cortex,Infralimbic,ILA,44
+Prefrontal cortex,Frontal pole,FRP,184
+Orbital,Orbital,ORB,714
+Orbital,Agranular insular,AI,95
+Orbital,Claustrum,CLA,583
+Perirhinal,Temporal association,TEa,541
+Perirhinal,Perirhinal,PERI,922
+Perirhinal,Ectorhinal,ECT,895
+Olfactory,Olfactory,OLF,698
+Olfactory,Endopiriform,EP,942
+Hippocampus,Hippocampus,HIP,1080
+Retrohippocampal region,Retrohippocampal region,RHP,822
+Amygdala,Lateral amygdalar nucleus,LA,131
+Amygdala,Basolateral amygdalar nucleus,BLA,295
+Amygdala,Basomedial amygdalar nucleus,BMA,319
+Amygdala,Posterior amygdalar nucleus,PA,780
+Amygdala,Striatal amygdala,sAMY,278
+Striatum,Dorsal striatum,STRd,485
+Striatum,Ventral striatum,STRv,493
+Striatum,Lateral septal complex,LSX,275
+Pallidum,Pallidum,PAL,803
+Thalamus,Thalamus,TH,549
+Hypothalamus,Hypothalamus,HY,1097
+Midbrain,Midbrain,MB,313
+Hindbrain,Hindbrain,HB,1065
+Cerebellum,Cerebellum,CB,512
+WMCSF,fiber tracts,fiber tracts,1009
+WMCSF,Ventrical System,VS,73
