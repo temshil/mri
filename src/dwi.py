@@ -312,6 +312,7 @@ if __name__ == '__main__':
                     '--method=4',
                     '--param0=1.2',
                     '--mask='+out_mask_upd,
+                    '--other_output=fa,ad,rd,md',
                     '--output='+dsi_output], check=True)
                     # '--correct_bias_field=0'
 
@@ -333,4 +334,4 @@ if __name__ == '__main__':
     
     subprocess.run([dsi_studio, '--action=exp',
                     '--source='+dsi_output+'/'+basename.split('.')[0]+'.gqi.fz',
-                    '--export=dti_fa,rd'], check=True)
+                    '--export=dti_fa,ad,rd,md'], check=True)
