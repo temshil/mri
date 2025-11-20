@@ -330,3 +330,7 @@ if __name__ == '__main__':
                     '--connectivity_type=pass,end',
                     '--connectivity_value=count,dti_fa',
                     '--output='+dsi_output], check=True)
+    
+    subprocess.run([dsi_studio, '--action=exp',
+                    '--source='+dsi_output+'/'+basename.split('.')[0]+'.dti.fz',
+                    '--export=dti_fa,rd'], check=True)
