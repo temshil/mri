@@ -9,7 +9,7 @@ import glob
 import re
 import shutil
 
-labels = pd.read_csv("/temshil/data/lib/atlas_modifications/labels.csv")
+labels = pd.read_csv("/temshil/lib/atlas_modifications/labels.csv")
 
 url  = "https://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/average_template/average_template_50.nrrd"
 nrrd_path = Path('/temshil/lib/atlas_modifications/average_template_50.nrrd')
@@ -30,7 +30,7 @@ img_header.set_xyzt_units('mm', 'sec')
 img_affine=np.eye(4)
 img_affine[:3, :3] *= .05  
 img = nii.Nifti1Image(data_flipped, affine=img_affine, header=img_header)
-nii_out_path = os.path.join('/temshil/data/lib/', os.path.basename(nrrd_path).split('.')[0]+'.nii.gz')
+nii_out_path = os.path.join('/temshil/lib/', os.path.basename(nrrd_path).split('.')[0]+'.nii.gz')
 nii.save(img, nii_out_path)
 print("Saved:", nii_out_path)
 
@@ -52,7 +52,7 @@ for str_id in labels['ID']:
     nii.save(img, nii_out_path)
     print("Saved:", nii_out_path)
 
-str_nifti_list = glob.glob('/temshil/data/atlas_modifications/str_nifti/*', recursive=True)
+str_nifti_list = glob.glob('/temshil/lib/atlas_modifications/str_nifti/*', recursive=True)
 
 shutil.copy(str_nifti_list[1],'/temshil/lib/atlas_modifications/atlas.nii.gz')
 
@@ -102,7 +102,11 @@ combined = np.zeros_like(atlas_data)
 combined[:midline, :, :] = left_hemi
 combined[midline:, :, :] = right_hemi
 
-atlas_img_upd = nii.Nifti1Image(atlas_data, affine=atlas_img.affine)
-nii.save(atlas_img_upd, '/temshil/atlas/atlas.nii.gz')
+atlas_img_header = atlas_img.header.copy()
+atlas_img_header.set_xyzt_units('mm', 'sec')
+atlas_img_affine=np.eye(4)
+atlas_img_affine[:3, :3] *= .05  
+atlas_img_upd = nii.Nifti1Image(atlas_data, affine=atlas_img_affine, header=atlas_img_header)
+nii.save(atlas_img_upd, '/temshil/lib/atlas.nii.gz')
    
 
