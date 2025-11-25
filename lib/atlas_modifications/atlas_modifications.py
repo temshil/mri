@@ -12,7 +12,7 @@ import shutil
 labels = pd.read_csv("/temshil/data/lib/atlas_modifications/labels.csv")
 
 url  = "https://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/average_template/average_template_50.nrrd"
-nrrd_path = Path('/temshil/data/lib/atlas_modifications/average_template_50.nrrd')
+nrrd_path = Path('/temshil/lib/atlas_modifications/average_template_50.nrrd')
 
 with requests.get(url, stream=True) as r:
     r.raise_for_status()
@@ -23,14 +23,20 @@ with requests.get(url, stream=True) as r:
 data, header = nrrd.read(nrrd_path)
 data_swapped = np.transpose(data, (2,1,0))
 data_flipped = np.flip(data_swapped, axis=2) 
+data_flipped[data_flipped==1]=0
 img = nii.Nifti1Image(data_flipped, affine=np.eye(4))
+img_header = img.header.copy()
+img_header.set_xyzt_units('mm', 'sec')
+img_affine=np.eye(4)
+img_affine[:3, :3] *= .05  
+img = nii.Nifti1Image(data_flipped, affine=img_affine, header=img_header)
 nii_out_path = os.path.join('/temshil/data/lib/', os.path.basename(nrrd_path).split('.')[0]+'.nii.gz')
 nii.save(img, nii_out_path)
 print("Saved:", nii_out_path)
 
 for str_id in labels['ID']:
     url  = f"https://download.alleninstitute.org/informatics-archive/current-release/mouse_ccf/annotation/ccf_2017/structure_masks/structure_masks_50/structure_{str_id}.nrrd"
-    nrrd_path = Path(f'/temshil/data/lib/atlas_modifications/str_nrrd/structure_{str_id}.nrrd')
+    nrrd_path = Path(f'/temshil/lib/atlas_modifications/str_nrrd/structure_{str_id}.nrrd')
 
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
@@ -42,13 +48,13 @@ for str_id in labels['ID']:
     data_swapped = np.transpose(data, (2,1,0))
     data_flipped = np.flip(data_swapped, axis=2) 
     img = nii.Nifti1Image(data_flipped, affine=np.eye(4))
-    nii_out_path = os.path.join('/temshil/data/lib/atlas_modifications/str_nifti', os.path.basename(nrrd_path).split('.')[0]+'.nii.gz')
+    nii_out_path = os.path.join('/temshil/lib/atlas_modifications/str_nifti', os.path.basename(nrrd_path).split('.')[0]+'.nii.gz')
     nii.save(img, nii_out_path)
     print("Saved:", nii_out_path)
 
-str_nifti_list = glob.glob('/temshil/data/lib/atlas_modifications/str_nifti/*', recursive=True)
+str_nifti_list = glob.glob('/temshil/data/atlas_modifications/str_nifti/*', recursive=True)
 
-shutil.copy(str_nifti_list[1],'/temshil/data/lib/atlas_modifications/atlas.nii.gz')
+shutil.copy(str_nifti_list[1],'/temshil/lib/atlas_modifications/atlas.nii.gz')
 
 pref = [184, 31, 44, 972]
 orb = [714, 95, 583]
@@ -58,7 +64,7 @@ amyg = [131,295,319,780,278]
 striat = [485,493,275]
 wmcsf = [73,1009]
 
-atlas_img = nii.load('/temshil/data/lib/atlas.nii.gz')
+atlas_img = nii.load('/temshil/lib/atlas.nii.gz')
 atlas_data = atlas_img.get_fdata()
 
 for str_nifti in str_nifti_list:
@@ -97,6 +103,6 @@ combined[:midline, :, :] = left_hemi
 combined[midline:, :, :] = right_hemi
 
 atlas_img_upd = nii.Nifti1Image(atlas_data, affine=atlas_img.affine)
-nii.save(atlas_img_upd, '/temshil/data/atlas/atlas.nii.gz')
+nii.save(atlas_img_upd, '/temshil/atlas/atlas.nii.gz')
    
 
