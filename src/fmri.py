@@ -178,6 +178,9 @@ def parse_args():
                         help='Input path for NIfTI file')
     parser.add_argument('--part', type=str,
                         help='Processing part 1 or 2')
+    parser.add_argument('--rm', action="store_true",
+      help="Save raw data, cleaned time series, and remove files larger than 100 MB."
+  )
     return parser.parse_args()
 
 
@@ -463,15 +466,12 @@ if __name__ == '__main__':
                         str(lp_sigma), 
                         func_in_path_ica.split('.')[0]+'_wmcsf_bp.nii.gz'], check=True)
         
-        func_in_path_sm = smooth(func_in_path_ica.split('.')[0]+'_wmcsf_bp.nii.gz')
-
         wmcsf_mask_atlas = np.isin(atlas_data, 200)
         atlas_data[wmcsf_mask_atlas]=0
 
         out_dir = os.path.join(in_path,'func','corr')
-        selected_rois = [31,191,329]
     
-        fmri_img = nii.load(func_in_path_sm)
+        fmri_img = nii.load(func_in_path_ica.split('.')[0]+'_wmcsf_bp.nii.gz')
         fmri_data = fmri_img.get_fdata()
         fmri_data = fmri_data[:, :, :, 20:-20]
         #https://github.com/CoBrALab/RABIES/blob/master/docs/confound_correction.md
@@ -490,5 +490,28 @@ if __name__ == '__main__':
         print("Saved ROI correlation matrices to MATLAB format.")
         
         plot_matrix(R,rois,out_dir)
+        
+        func_in_path_sm = smooth(func_in_path_ica.split('.')[0]+'_wmcsf_bp.nii.gz')   
+        
+        selected_rois = [31,191,329]
     
-        roi_to_voxel_map(fmri_masked, ts_dict, mask_data, selected_rois, out_dir, affine)
+        fmri_img_sm = nii.load(func_in_path_sm)
+        fmri_data_sm = fmri_img_sm.get_fdata()
+        fmri_data_sm = fmri_data_sm[:, :, :, 20:-20]
+        
+        fmri_masked_sm = fmri_data_sm * mask_data[..., np.newaxis]
+    
+        ts_dict_sm = roi_time_series(fmri_masked_sm, atlas_data, roi_labels)
+        
+        roi_to_voxel_map(fmri_masked_sm, ts_dict_sm, mask_data, selected_rois, out_dir, affine)
+
+        
+        if args.rm:
+            limit = 100 * 1024 * 1024 
+    
+            for file in os.listdir(os.path.join(in_path,'func')):
+                if file.endswith("nii.gz") and "wmcsf_bp" not in file:
+                    full_path = os.path.join(os.path.join(in_path,'func'), file)
+    
+                    if os.path.getsize(full_path) > limit:
+                        os.remove(full_path)
