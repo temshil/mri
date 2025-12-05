@@ -52,21 +52,28 @@ def biascorrection(in_path, shrink_factor, n_iterations):
     out_path = in_path.split('.')[0]+'_bc.nii.gz'
     corrected_image.to_file(out_path)
     return out_path
-
-def flip_nifti(in_path,axis):
-    img = nii.load(in_path)
-    data = img.get_fdata()
-    flipped_data = np.flip(data, axis=axis) 
-    flipped_img = nii.Nifti1Image(flipped_data, img.affine)
-    axis_name = str(axis)
-    out_path = in_path.split('.')[0]+'_fl_'+axis_name+'.nii.gz'
-    nii.save(flipped_img, out_path)
-    return out_path
     
-def change_header(in_path1,in_path2):
+def find_slices(in_path):
+    flo_img = nii.load(in_path)
+    data = flo_img.get_fdata()
+    
+    back = False
+    for i in range(data.shape[2]):
+        data_slice = data[:,:,i]
+        if np.isin(data_slice, [822, 2822]).any() and back==False:
+            slice_back = i
+            back = True
+        if np.isin(data_slice, [31, 2031]).any():
+            slice_front = i+1
+    return(slice_back, slice_front)
+
+def change_header(in_path1,in_path2, slice_back=None, slice_front=None):
     ref_img = nii.load(in_path1)
     flo_img = nii.load(in_path2)
-    data = flo_img.get_fdata()
+    if slice_back is not None and len(flo_img.shape)==4:
+        data = flo_img.get_fdata()[:,:,slice_back:slice_front,:]
+    elif slice_back is not None and len(flo_img.shape)==3:
+        data = flo_img.get_fdata()[:,:,slice_back:slice_front]
     flo_img_upd = nii.Nifti1Image(data, flo_img.affine, header=ref_img.header)
     flo_img_upd_out = in_path2.split('.')[0]+'_upd.nii.gz'
     nii.save(flo_img_upd, flo_img_upd_out)
@@ -77,6 +84,8 @@ def parse_args():
         description="DWI analysis pipeline")
     parser.add_argument('--in_path', type=str,
                         help='Input path for NIfTI file')
+    parser.add_argument('--rm', action="store_true",
+      help="Save raw data, cleaned time series, and remove files larger than 100 MB.")
     return parser.parse_args()
 
 
@@ -279,10 +288,13 @@ if __name__ == '__main__':
         
     out_atlas = os.path.join(in_path,'dwi','anno2dwi.nii.gz')
     
-    basename = os.path.basename(out_path_ds)
+    slice_back, slice_front = find_slices(out_atlas)
     
-    out_atlas_upd = change_header(out_path_ds,out_atlas)
-    out_mask_upd = change_header(out_path_ds,out_path_ds_mask)
+    out_atlas_upd = change_header(out_path_ds,out_atlas,slice_back, slice_front)
+    out_mask_upd = change_header(out_path_ds,out_path_ds_mask,slice_back, slice_front)
+    out_path_ds_upd = change_header(out_path_ds,out_path_ds,slice_back, slice_front)
+    
+    basename = os.path.basename(out_path_ds_upd)
     
     atlas_img = nii.load(out_atlas_upd)
     atlas_data = atlas_img.get_fdata()
@@ -291,30 +303,32 @@ if __name__ == '__main__':
     atlas_data_rm_wmcsf = nii.Nifti1Image(atlas_data, atlas_img.affine, header=atlas_img.header)
     nii.save(atlas_data_rm_wmcsf, out_atlas_upd)
     
+    in_path = f'/temshil/data/processed/sub-{sub}/ses-{ses}'
+    
     dsi_output = os.path.join(in_path,'dwi','dsi_studio')
     
     os.makedirs(dsi_output, exist_ok=True)
     
     dsi_studio = '/temshil/dsi_studio/dsi-studio/dsi_studio'
     
-    bval = dwi_in_path.split('.')[0]+'.bval'
-    bvec = dwi_in_path.split('.')[0]+'.bvec'
+    bval = f'/temshil/data/processed/sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dwi.bval'
+    bvec = f'/temshil/data/processed/sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dwi.bvec'
     
     subprocess.run([dsi_studio, '--action=src',
-                    '--source='+out_path_ds,
+                    '--source='+out_path_ds_upd,
                     '--bval='+bval,
                     '--bvec='+bvec,
                     '--output='+dsi_output], check=True)
 
     subprocess.run([dsi_studio, '--action=rec',
                     '--source='+dsi_output+'/'+basename.split('.')[0]+'.sz',
-                    '--cmd="[Step T2][B-table][flip by]+[Step T2][B-table][flip bz]"',
+                    '--cmd="[Step T2][B-table][flip bz]"',
+                    # '--cmd="[Step T2][B-table][flip by]+[Step T2][B-table][flip bz]"',
                     '--method=4',
                     '--param0=1.2',
                     '--mask='+out_mask_upd,
                     '--other_output=fa,ad,rd,md',
                     '--output='+dsi_output], check=True)
-                    # '--correct_bias_field=0'
 
     subprocess.run([dsi_studio, '--action=trk',
                     '--source='+dsi_output+'/'+basename.split('.')[0]+'.gqi.fz',
@@ -335,3 +349,13 @@ if __name__ == '__main__':
     subprocess.run([dsi_studio, '--action=exp',
                     '--source='+dsi_output+'/'+basename.split('.')[0]+'.gqi.fz',
                     '--export=dti_fa,ad,rd,md'], check=True)
+    
+    if args.rm:
+        limit = 100 * 1024 * 1024 
+
+        for file in os.listdir(os.path.join(in_path,'dwi')):
+            if "_ds" not in file:
+                full_path = os.path.join(os.path.join(in_path,'dwi'), file)
+
+                if os.path.getsize(full_path) > limit:
+                    os.remove(full_path)
