@@ -493,7 +493,7 @@ if __name__ == '__main__':
         
         func_in_path_sm = smooth(func_in_path_ica.split('.')[0]+'_wmcsf_bp.nii.gz')   
         
-        selected_rois = [31,191,329]
+        selected_rois = [31,1080,131]
     
         fmri_img_sm = nii.load(func_in_path_sm)
         fmri_data_sm = fmri_img_sm.get_fdata()
@@ -510,8 +510,7 @@ if __name__ == '__main__':
             limit = 100 * 1024 * 1024 
     
             for file in os.listdir(os.path.join(in_path,'func')):
-                if file.endswith("nii.gz") and "wmcsf_bp" not in file:
+               if file.endswith(("sm.nii.gz", "mc_ds.nii.gz")):
                     full_path = os.path.join(os.path.join(in_path,'func'), file)
-    
                     if os.path.getsize(full_path) > limit:
                         os.remove(full_path)
