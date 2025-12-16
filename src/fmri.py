@@ -510,7 +510,7 @@ if __name__ == '__main__':
             limit = 100 * 1024 * 1024 
     
             for file in os.listdir(os.path.join(in_path,'func')):
-               if file.endswith("sm.nii.gz") and not file.endswith(("sm.nii.gz", "mc_ds.nii.gz")):
+               if file.endswith("nii.gz") and not file.endswith(("sm.nii.gz", "mc_ds.nii.gz")):
                     full_path = os.path.join(os.path.join(in_path,'func'), file)
                     if os.path.getsize(full_path) > limit:
                         os.remove(full_path)
