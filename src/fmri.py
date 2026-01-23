@@ -94,7 +94,7 @@ def smooth(in_path):
 
     smoothed_data = np.zeros_like(data)
 
-    for t in range(data.shape[-1]):  # loop over timepoints
+    for t in range(data.shape[-1]):
         smoothed_data[..., t] = gaussian_filter(data[..., t],
                                                 sigma=[sigma_xy, sigma_xy, sigma_z])
 
@@ -136,7 +136,7 @@ def roi_to_voxel_map(fmri_masked, ts_dict, mask, target_rois, out_dir, affine):
     os.makedirs(out_dir, exist_ok=True)
 
     voxel_ts = fmri_masked.reshape(-1, fmri_masked.shape[-1])
-    voxel_ts = voxel_ts[mask.flatten() > 0, :]  # apply mask
+    voxel_ts = voxel_ts[mask.flatten() > 0, :]
 
     for roi in target_rois:
         if roi not in ts_dict:
@@ -345,7 +345,7 @@ if __name__ == '__main__':
         if  os.path.exists(os.path.join(in_path,'func', 'bad_ics.txt')):
             
             with open(os.path.join(in_path,'func', 'bad_ics.txt'), "r") as f:
-                bad_ics = [line.strip() for line in f if line.strip()]  # remove empty lines
+                bad_ics = [line.strip() for line in f if line.strip()]
     
             bad_ics_joined = ",".join(bad_ics)
                         
